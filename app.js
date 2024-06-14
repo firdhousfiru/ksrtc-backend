@@ -3,12 +3,30 @@ const mongoose = require("mongoose")
 const cors = require("cors")
 const {ksrtcmodel} = require("./models/ksrtc")
 const jwt=require("jsonwebtoken")
+const bcrypt=require("bcryptjs")
 
 mongoose.connect("mongodb+srv://firdhouskh:kunjumol@cluster0.h3qcl.mongodb.net/ksrtcdb?retryWrites=true&w=majority&appName=Cluster0")
 let app = express()
 app.use(cors())
 app.use(express.json())
 
+
+const generateHashedpassword=async(password)=>{
+    const salt = await bcrypt.genSalt(10)
+    return bcrypt.hash(password,salt)
+}
+
+
+
+app.post("/signup",async(req,res)=>{
+    let input=req.body
+    let hashedpassword=await generateHashedpassword(input.password)
+    console.log(hashedpassword)
+    input.password=hashedpassword
+    let users=new ksrtcmodel(input)
+    users.save()
+    res.json({"status":"signup"})
+})
 
 app.post("/login", (req, res) => {
     let input = req.body
